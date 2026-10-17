@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitLife - Health & Fitness App</title>
+    <link rel="manifest" href="#"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0c29;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .header h1 { font-size: 24px; color: #fff; }
+        .header h1 span { color: #00f5a0; }
+        .header .date { font-size: 12px; color: #ccc; }
+        .profile-btn {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00f5a0, #00d9f5);
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* ===== NAVIGATION ===== */
+        .nav-bar {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: rgba(15, 12, 41, 0.95);
+            backdrop-filter: blur(15px);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 15px;
+            border-radius: 15px;
+            transition: all 0.3s;
+            background: none; border: none; color: #888;
+        }
+        .nav-item.active { background: rgba(0,245,160,0.15); color: #00f5a0; }
+        .nav-item span:first-child { font-size: 22px; }
+        .nav-item span:last-child { font-size: 10px; margin-top: 3px; }
+
+        /* ===== MAIN CONTENT ===== */
+        .main { padding: 15px; padding-bottom: 90px; }
+
+        /* ===== SCREENS ===== */
+        .screen { display: none; animation: fadeIn 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== CARDS ===== */
+        .card {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.12);
+        }
+        .card h3 { font-size: 16px; color: #ccc; margin-bottom: 15px; }
+
+        /* ===== DASHBOARD CARDS ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 18px;
+            padding: 18px 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: scale(1.02); }
+        .stat-card .icon { font-size: 30px; margin-bottom: 8px; }
+        .stat-card .value { font-size: 26px; font-weight: 700; }
+        .stat-card .label { font-size: 11px; color: #aaa; margin-top: 3px; }
+        .stat-card.green .value { color: #00f5a0; }
+        .stat-card.blue .value { color: #00d9f5; }
+        .stat-card.orange .value { color: #f5a623; }
+        .stat-card.pink .value { color: #f56da0; }
+
+        /* ===== PROGRESS BAR ===== */
+        .progress-bar {
+            background: rgba(255,255,255,0.1);
+            border-radius: 50px;
+            height: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 50px;
+            transition: width 0.5s ease;
+        }
+        .progress-fill.green { background: linear-gradient(90deg, #00f5a0, #00d9f5); }
+        .progress-fill.blue { background: linear-gradient(90deg, #00d9f5, #0099ff); }
+        .progress-fill.orange { background: linear-gradient(90deg, #f5a623, #f5365c); }
+        .progress-fill.purple { background: linear-gradient(90deg, #9b59b6, #e056fd); }
+
+        /* ===== CIRCLE PROGRESS ===== */
+        .circle-progress {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        .circle-wrap {
+            position: relative;
+            width: 130px;
+            height: 130px;
+        }
+        .circle-wrap svg {
+            transform: rotate(-90deg);
+        }
+        .circle-wrap .circle-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .circle-wrap .circle-text .num {
+            font-size: 24px;
+            font-weight: 700;
+            color: #00f5a0;
+        }
+        .circle-wrap .circle-text .lbl {
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #00f5a0, #00d9f5);
+            color: #1a1a2e;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: scale(0.98); }
+        .btn-danger {
+            background: linear-gradient(135deg, #f5365c, #f5a623);
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #00f5a0;
+            color: #00f5a0;
+        }
+        .btn-small {
+            padding: 8px 18px;
+            font-size: 13px;
+            width: auto;
+            display: inline-block;
+        }
+
+        /* ===== INPUTS ===== */
+        .input-group { margin-bottom: 12px; }
+        .input-group label { font-size: 13px; color: #aaa; margin-bottom: 5px; display: block; }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.08);
+            color: white;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.3s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #00f5a0;
+        }
+        .input-group input::placeholder { color: #666; }
+        .input-group select option { background: #1a1a2e; }
+
+        /* ===== FOOD LIST ===== */
+        .food-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .food-item:last-child { border-bottom: none; }
+        .food-item .food-name { font-size: 14px; font-weight: 600; }
+        .food-item .food-cal { font-size: 13px; color: #f5a623; }
+        .food-item .food-del {
+            background: rgba(245,54,92,0.2);
+            border: none;
+            color: #f5365c;
+            border-radius: 8px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* ===== FOOD SEARCH ===== */
+        .food-search-results {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            margin-top: 5px;
+            overflow: hidden;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .food-search-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            transition: background 0.2s;
+        }
+        .food-search-item:hover { background: rgba(0,245,160,0.1); }
+        .food-search-item .cal-badge {
+            background: rgba(245,166,35,0.2);
+            color: #f5a623;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        /* ===== STEP COUNTER ===== */
+        .step-display {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .step-number {
+            font-size: 72px;
+            font-weight: 900;
+            color: #00f5a0;
+            text-shadow: 0 0 30px rgba(0,245,160,0.5);
+        }
+        .step-label { font-size: 16px; color: #aaa; margin-top: 5px; }
+        .step-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+        .step-info-item { text-align: center; }
+        .step-info-item .si-val { font-size: 20px; font-weight: 700; color: #00d9f5; }
+        .step-info-item .si-lab { font-size: 11px; color: #aaa; }
+        .step-btn-row { display: flex; gap: 10px; margin-top: 15px; }
+        .step-btn-row .btn { margin-top: 0; }
+
+        /* ===== WATER TRACKER ===== */
+        .water-display {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 8px;
+            margin: 15px 0;
+        }
+        .water-glass {
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            opacity: 0.3;
+        }
+        .water-glass.filled { opacity: 1; }
+        .water-glass:hover { transform: scale(1.2); }
+        .water-count {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: #00d9f5;
+        }
+        .water-count span { font-size: 16px; color: #aaa; }
+
+        /* ===== BMI ===== */
+        .bmi-result {
+            text-align: center;
+            padding: 20px;
+        }
+        .bmi-number { font-size: 60px; font-weight: 900; }
+        .bmi-status { font-size: 20px; font-weight: 600; margin-top: 5px; }
+        .bmi-bar {
+            display: flex;
+            border-radius: 50px;
+            overflow: hidden;
+            height: 15px;
+            margin: 15px 0;
+        }
+        .bmi-bar div { flex: 1; }
+        .bmi-indicator { height: 25px; width: 4px; background: white; border-radius: 2px; position: relative; margin-top: -5px; transition: left 0.5s; }
+
+        /* ===== SLEEP ===== */
+        .sleep-log {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .sleep-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 12px 15px;
+        }
+        .sleep-item .s-date { font-size: 13px; color: #aaa; }
+        .sleep-item .s-duration { font-size: 16px; font-weight: 700; color: #9b59b6; }
+        .sleep-item .s-quality { font-size: 20px; }
+
+        /* ===== TIPS CARD ===== */
+        .tip-card {
+            background: linear-gradient(135deg, rgba(0,245,160,0.15), rgba(0,217,245,0.15));
+            border: 1px solid rgba(0,245,160,0.3);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+        .tip-card h4 { color: #00f5a0; margin-bottom: 8px; }
+        .tip-card p { font-size: 13px; color: #ccc; line-height: 1.6; }
+
+        /* ===== NOTIFICATION TOAST ===== */
+        .toast {
+            position: fixed;
+            top: 80px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,245,160,0.9);
+            color: #1a1a2e;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; }
+
+        /* ===== WELCOME SCREEN ===== */
+        .welcome-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+        .welcome-screen .logo { font-size: 80px; margin-bottom: 20px; }
+        .welcome-screen h2 { font-size: 32px; font-weight: 800; margin-bottom: 10px; }
+        .welcome-screen h2 span { color: #00f5a0; }
+        .welcome-screen p { color: #aaa; font-size: 15px; line-height: 1.7; margin-bottom: 30px; }
+
+        /* ===== CHALLENGE CARDS ===== */
+        .challenge-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .challenge-card .c-icon { font-size: 35px; }
+        .challenge-card .c-info { flex: 1; }
+        .challenge-card .c-title { font-size: 15px; font-weight: 600; }
+        .challenge-card .c-desc { font-size: 12px; color: #aaa; margin-top: 3px; }
+        .challenge-card .c-btn {
+            padding: 7px 15px;
+            border-radius: 20px;
+            border: 2px solid #00f5a0;
+            background: transparent;
+            color: #00f5a0;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .challenge-card .c-btn.done {
+            background: rgba(0,245,160,0.2);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(0,245,160,0.3); border-radius: 2px; }
+
+        /* ===== BANNER ===== */
+        .banner {
+            background: linear-gradient(135deg, #00f5a0, #00d9f5);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
+            color: #1a1a2e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .banner .b-text h2 { font-size: 20px; font-weight: 800; }
+        .banner .b-text p { font-size: 13px; opacity: 0.7; margin-top: 3px; }
+        .banner .b-icon { font-size: 50px; }
+        
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: #fff; }
+        
+        /* Divider */
+        .divider { height: 1px; background: rgba(255,255,255,0.1); margin: 15px 0; }
+    </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- WELCOME SCREEN -->
+<div id="welcomeScreen">
+    <div class="welcome-screen">
+        <div class="logo">💪</div>
+        <h2>Welcome to <span>FitLife</span></h2>
+        <p>Aapka personal health aur fitness partner!<br>
+        Calories track karo, steps gino, pani track karo aur healthy raho! 🌟</p>
+        
+        <div class="input-group" style="width:100%; text-align:left;">
+            <label>Aapka Naam 👤</label>
+            <input type="text" id="userName" placeholder="Apna naam likhein..." />
+        </div>
+        <div class="input-group" style="width:100%; text-align:left;">
+            <label>Aapki Umar 🎂</label>
+            <input type="number" id="userAge" placeholder="Age in years..." />
+        </div>
+        <div class="input-group" style="width:100%; text-align:left;">
+            <label>Gender 🧍</label>
+            <select id="userGender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" onclick="startApp()">🚀 App Start Karo!</button>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp" style="display:none;">
+    
+    <!-- Header -->
+    <div class="header">
+        <div>
+            <div class="header h1" style="font-size:22px; font-weight:800;">💪 <span style="color:#00f5a0;">FitLife</span></div>
+            <div class="date" id="headerDate"></div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div id="headerGreet" style="font-size:13px; color:#aaa;"></div>
+            <div class="profile-btn" onclick="showScreen('profileScreen')">👤</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        
+        <!-- DASHBOARD SCREEN -->
+        <div class="screen active" id="dashboardScreen">
+            <div class="banner">
+                <div class="b-text">
+                    <h2 id="bannerGreet">Good Morning! 🌅</h2>
+                    <p>Aaj bhi healthy rahein!</p>
+                </div>
+                <div class="b-icon">🏃</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card green" onclick="showScreen('stepsScreen')">
+                    <div class="icon">👟</div>
+                    <div class="value" id="dashSteps">0</div>
+                    <div class="label">Steps Today</div>
+                    <div class="progress-bar" style="margin-top:10px;">
+                        <div class="progress-fill green" id="stepsProgress" style="width:0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card orange" onclick="showScreen('caloriesScreen')">
+                    <div class="icon">🔥</div>
+                    <div class="value" id="dashCalories">0</div>
+                    <div class="label">Calories Today</div>
+                    <div class="progress-bar" style="margin-top:10px;">
+                        <div class="progress-fill orange" id="caloriesProgress" style="width:0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card blue" onclick="showScreen('waterScreen')">
+                    <div class="icon">💧</div>
+                    <div class="value" id="dashWater">0</div>
+                    <div class="label">Glasses of Water</div>
+                    <div class="progress-bar" style="margin-top:10px;">
+                        <div class="progress-fill blue" id="waterProgress" style="width:0%"></div>
+                    </div>
+                </div>
+                <div class="stat-card pink" onclick="showScreen('bmiScreen')">
+                    <div class="icon">⚖️</div>
+                    <div class="value" id="dashBMI">--</div>
+                    <div class="label">BMI Index</div>
+                    <div class="progress-bar" style="margin-top:10px;">
+                        <div class="progress-fill purple" id="bmiProgress" style="width:50%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip-card">
+                <h4>💡 Aaj Ka Health Tip</h4>
+                <p id="dailyTip">Loading tip...</p>
+            </div>
+
+            <div class="section-title">🏆 Daily Challenges</div>
+            <div id="challengesList"></div>
+        </div>
+
+        <!-- STEPS SCREEN -->
+        <div class="screen" id="stepsScreen">
+            <div class="card">
+                <h3>👟 Step Counter</h3>
+                <div class="step-display">
+                    <div class="step-number" id="stepCount">0</div>
+                    <div class="step-label">Steps Aaj Ke Din</div>
+                    <div class="progress-bar" style="margin-top:15px; height:15px;">
+                        <div class="progress-fill green" id="stepProgress" style="width:0%"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:5px; font-size:12px; color:#aaa;">
+                        <span>0</span>
+                        <span id="stepGoalLabel">10,000 Goal</span>
+                    </div>
+                </div>
+                <div class="step-info">
+                    <div class="step-info-item">
+                        <div class="si-val" id="kmWalked">0.0</div>
+                        <div class="si-lab">Kilometers</div>
+                    </div>
+                    <div class="step-info-item">
+                        <div class="si-val" id="calBurned">0</div>
+                        <div class="si-lab">Cal Burned</div>
+                    </div>
+                    <div class="step-info-item">
+                        <div class="si-val" id="activeMin">0</div>
+                        <div class="si-lab">Active Min</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>⚙️ Step Goal Set Karo</h3>
+                <div class="input-group">
+                    <label>Daily Step Goal</label>
+                    <input type="number" id="stepGoalInput" value="10000" min="1000" max="50000" />
+                </div>
+                <button class="btn btn-primary" onclick="setStepGoal()">✅ Goal Save Karo</button>
+            </div>
+
+            <div class="card">
+                <h3>📊 Step Status</h3>
+                <div style="text-align:center; padding:15px 0;">
+                    <div style="font-size:50px;" id="stepEmoji">🚶</div>
+                    <div style="font-size:18px; font-weight:700; margin-top:10px;" id="stepStatus">Chalna Shuru Karo!</div>
+                    <div style="color:#aaa; font-size:13px; margin-top:5px;" id="stepRemaining">10,000 steps remaining</div>
+                </div>
+            </div>
+
+            <div class="step-btn-row">
+                <button class="btn btn-primary" onclick="addStepsManually()">+ Steps Add Karo</button>
+                <button class="btn btn-danger" onclick="resetSteps()">🔄 Reset</button>
+            </div>
+            
+            <div class="card" style="margin-top:15px;">
+                <h3>Manual Steps Add</h3>
+                <div class="input-group">
+                    <label>Kitne Steps Add Karna Chahte Hain?</label>
+                    <input type="number" id="manualSteps" placeholder="e.g. 500" min="1"/>
+                </div>
+                <button class="btn btn-outline" onclick="addManualSteps()">➕ Add Steps</button>
+            </div>
+        </div>
+
+        <!-- CALORIES SCREEN -->
+        <div class="screen" id="caloriesScreen">
+            <div class="card">
+                <h3>🔥 Calories Tracker</h3>
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:15px;">
+                    <div>
+                        <div style="font-size:40px; font-weight:900; color:#f5a623;" id="totalCalDisplay">0</div>
+                        <div style="font-size:12px; color:#aaa;">Total Calories Today</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:20px; font-weight:700; color:#00f5a0;" id="remainCalDisplay">2000</div>
+                        <div style="font-size:12px; color:#aaa;">Remaining</div>
+                    </div>
+                </div>
+                <div class="progress-bar" style="height:12px;">
+                    <div class="progress-fill orange" id="calProgress" style="width:0%"></div>
+                </div>
+                <div style="text-align:center; margin-top:8px; font-size:13px; color:#aaa;">
+                    Daily Goal: <span id="calGoalDisplay">2000</span> kcal
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🍽️ Khana Add Karo</h3>
+                <div class="input-group">
+                    <label>Khana Dhundho 🔍</label>
+                    <input type="text" id="foodSearch" placeholder="e.g. roti, rice, biryani..." oninput="searchFood()" />
+                </div>
+                <div class="food-search-results" id="foodSearchResults"></div>
+                
+                <div class="divider"></div>
+                
+                <div class="input-group">
+                    <label>Ya Khud Enter Karo</label>
+                    <input type="text" id="customFoodName" placeholder="Khane ka naam..." />
+                </div>
+                <div class="input-group">
+                    <label>Calories (kcal)</label>
+                    <input type="number" id="customFoodCal" placeholder="Calories likhein..." />
+                </div>
+                <button class="btn btn-primary" onclick="addCustomFood()">🍽️ Add to Log</button>
+            </div>
+
+            <div class="card">
+                <h3>📋 Aaj Ka Khana Log</h3>
+                <div id="foodLog">
+                    <div style="text-align:center; color:#666; padding:20px;">Koi khana nahi add hua abhi</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚙️ Daily Calorie Goal</h3>
+                <div class="input-group">
+                    <label>Daily Goal (kcal)</label>
+                    <input type="number" id="calGoalInput" value="2000" />
+                </div>
+                <button class="btn btn-primary" onclick="setCalGoal()">✅ Goal Save Karo</button>
+            </div>
+        </div>
+
+        <!-- WATER SCREEN -->
+        <div class="screen" id="waterScreen">
+            <div class="card">
+                <h3>💧 Water Intake Tracker</h3>
+                <div style="text-align:center;">
+                    <div class="water-count" id="waterCount">0 <span>/ 8 Glasses</span></div>
+                    <div style="color:#aaa; font-size:13px; margin-top:5px;" id="waterML">0 ml / 2000 ml</div>
+                </div>
+                <div class="progress-bar" style="height:15px; margin:15px 0;">
+                    <div class="progress-fill blue" id="waterProgressBar" style="width:0%"></div>
+                </div>
+                <div class="water-display" id="waterGlasses"></div>
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button class="btn btn-primary" style="margin-top:0;" onclick="drinkWater()">💧 Paani Piya!</button>
+                    <button class="btn btn-danger" style="margin-top:0; width:auto; padding:12px 20px;" onclick="removeWater()">-1</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⏰ Reminder Tips</h3>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="background:rgba(0,217,245,0.1); border-radius:12px; padding:12px; border-left:3px solid #00d9f5;">
+                        <div style="font-size:13px; color:#00d9f5;">🌅 Subah Uthke</div>
+                        <div style="font-size:12px; color:#aaa; margin-top:3px;">2 glass paani zaroor piyo</div>
+                    </div>
+                    <div style="background:rgba(0,217,245,0.1); border-radius:12px; padding:12px; border-left:3px solid #00d9f5;">
+                        <div style="font-size:13px; color:#00d9f5;">🍽️ Khane Se Pehle</div>
+                        <div style="font-size:12px; color:#aaa; margin-top:3px;">1 glass paani piyo - weight control mein madad karega</div>
+                    </div>
+                    <div style="background:rgba(0,217,245,0.1); border-radius:12px; padding:12px; border-left:3px solid #00d9f5;">
+                        <div style="font-size:13px; color:#00d9f5;">🏋️ Exercise Ke Baad</div>
+                        <div style="font-size:12px; color:#aaa; margin-top:3px;">2-3 glass paani piyo dehydration se bachne ke liye</div>
+                    </div>
+                    <div style="background:rgba(0,217,245,0.1); border-radius:12px; padding:12px; border-left:3px solid #00d9f5;">
+                        <div style="font-size:13px; color:#00d9f5;">🌙 Sone Se Pehle</div>
+                        <div style="font-size:12px; color:#aaa; margin-top:3px;">1 glass paani piyo</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚙️ Water Goal Set Karo</h3>
+                <div class="input-group">
+                    <label>Daily Goal (Glasses)</label>
+                    <input type="number" id="waterGoalInput" value="8" min="1" max="20" />
+                </div>
+                <button class="btn btn-primary" onclick="setWaterGoal()">✅ Goal Save Karo</button>
+            </div>
+        </div>
+
+        <!-- BMI SCREEN -->
+        <div class="screen" id="bmiScreen">
+            <div class="card">
+                <h3>⚖️ BMI Calculator</h3>
+                <div class="input-group">
+                    <label>Aapki Height (cm)</label>
+                    <input type="number" id="bmiHeight" placeholder="e.g. 170" />
+                </div>
+                <div class="input-group">
+                    <label>Aapka Weight (kg)</label>
+                    <input type="number" id="bmiWeight" placeholder="e.g. 65" />
+                </div>
+                <button class="btn btn-primary" onclick="calculateBMI()">📊 BMI Calculate Karo</button>
+            </div>
+
+            <div class="card" id="bmiResultCard" style="display:none;">
+                <h3>📊 Aapka BMI Result</h3>
+                <div class="bmi-result">
+                    <div class="bmi-number" id="bmiResult">--</div>
+                    <div class="bmi-status" id="bmiStatus">--</div>
+                </div>
+                <div class="bmi-bar">
+                    <div style="background:#3498db; flex:1;"></div>
+                    <div style="background:#2ecc71; flex:2;"></div>
+                    <div style="background:#f39c12; flex:1.5;"></div>
+                    <div style="background:#e74c3c; flex:1.5;"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; color:#aaa;">
+                    <span>Underweight<br>&lt;18.5</span>
+                    <span style="text-align:center;">Normal<br>18.5-25</span>
+                    <span style="text-align:center;">Overweight<br>25-30</span>
+                    <span style="text-align:right;">Obese<br>&gt;30</span>
+                </div>
+                <div class="tip-card" style="margin-top:15px; margin-bottom:0;">
+                    <h4>💡 Aapke Liye Tip</h4>
+                    <p id="bmiTip">--</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📋 BMI Categories</h3>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(52,152,219,0.15); border-radius:12px;">
+                        <div style="width:12px; height:12px; border-radius:50%; background:#3498db;"></div>
+                        <div><div style="font-size:14px;">Underweight</div><div style="font-size:12px; color:#aaa;">BMI &lt; 18.5</div></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(46,204,113,0.15); border-radius:12px;">
+                        <div style="width:12px; height:12px; border-radius:50%; background:#2ecc71;"></div>
+                        <div><div style="font-size:14px;">Normal Weight ✅</div><div style="font-size:12px; color:#aaa;">BMI 18.5 - 24.9</div></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(243,156,18,0.15); border-radius:12px;">
+                        <div style="width:12px; height:12px; border-radius:50%; background:#f39c12;"></div>
+                        <div><div style="font-size:14px;">Overweight</div><div style="font-size:12px; color:#aaa;">BMI 25 - 29.9</div></div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; padding:10px; background:rgba(231,76,60,0.15); border-radius:12px;">
+                        <div style="width:12px; height:12px; border-radius:50%; background:#e74c3c;"></div>
+                        <div><div style="font-size:14px;">Obese</div><div style="font-size:12px; color:#aaa;">BMI ≥ 30</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLEEP SCREEN -->
+        <div class="screen" id="sleepScreen">
+            <div class="card">
+                <h3>😴 Sleep Tracker</h3>
+                <div class="input-group">
+                    <label>Kab Soye? 🌙</label>
+                    <input type="time" id="sleepTime" style="color-scheme: dark;" />
+                </div>
+                <div class="input-group">
+                    <label>Kab Uthe? 🌅</label>
+                    <input type="time" id="wakeTime" style="color-scheme: dark;" />
+                </div>
+                <button class="btn btn-primary" onclick="logSleep()">😴 Sleep Log Karo</button>
+            </div>
+
+            <div class="card" id="sleepResultCard" style="display:none;">
+                <h3>📊 Last Night Ka Sleep</h3>
+                <div style="text-align:center; padding:15px 0;">
+                    <div style="font-size:50px; font-weight:900; color:#9b59b6;" id="sleepDuration">0h 0m</div>
+                    <div style="font-size:16px; margin-top:10px;" id="sleepQuality">--</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📋 Sleep History</h3>
+                <div class="sleep-log" id="sleepLog">
+                    <div style="text-align:center; color:#666; padding:20px;">Koi sleep record nahi hai abhi</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>💡 Better Sleep Tips</h3>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <div style="background:rgba(155,89,182,0.15); border-radius:12px; padding:12px; border-left:3px solid #9b59b6; font-size:13px; color:#ccc; line-height:1.6;">🌙 Raat ko 10-11 baje tak so jao</div>
+                    <div style="background:rgba(155,89,182,0.15); border-radius:12px; padding:12px; border-left:3px solid #9b59b6; font-size:13px; color:#ccc; line-height:1.6;">📱 Sone se 1 ghante pehle phone band karo</div>
+                    <div style="background:rgba(155,89,182,0.15); border-radius:12px; padding:12px; border-left:3px solid #9b59b6; font-size:13px; color:#ccc; line-height:1.6;">☕ Raat ko chai/coffee mat piyo</div>
+                    <div style="background:rgba(155,89,182,0.15); border-radius:12px; padding:12px; border-left:3px solid #9b59b6; font-size:13px; color:#ccc; line-height:1.6;">🎯 7-8 ghante ki neend zaroor lo</div>
+                    <div style="background:rgba(155,89,182,0.15); border-radius:12px; padding:12px; border-left:3px solid #9b59b6; font-size:13px; color:#ccc; line-height:1.6;">🌡️ Kamra thanda aur dark rakho sone ke liye</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE SCREEN -->
+        <div class="screen" id="profileScreen">
+            <div class="card" style="text-align:center; padding:30px;">
+                <div style="font-size:70px; margin-bottom:10px;">👤</div>
+                <div style="font-size:24px; font-weight:700;" id="profileName">--</div>
+                <div style="color:#aaa; margin-top:5px;" id="profileInfo">--</div>
+            </div>
+
+            <div class="card">
+                <h3>📊 Aaj Ka Summary</h3>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(0,245,160,0.1); border-radius:12px;">
+                        <span>👟 Steps</span><span style="color:#00f5a0; font-weight:700;" id="sumSteps">0</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(245,166,35,0.1); border-radius:12px;">
+                        <span>🔥 Calories Khaye</span><span style="color:#f5a623; font-weight:700;" id="sumCalories">0</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(0,217,245,0.1); border-radius:12px;">
+                        <span>💧 Paani</span><span style="color:#00d9f5; font-weight:700;" id="sumWater">0 Glass</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:rgba(155,89,182,0.1); border-radius:12px;">
+                        <span>⚖️ BMI</span><span style="color:#9b59b6; font-weight:700;" id="sumBMI">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>⚙️ Profile Edit Karo</h3>
+                <div class="input-group">
+                    <label>Naam</label>
+                    <input type="text" id="editName" placeholder="Apna naam..." />
+                </div>
+                <div class="input-group">
+                    <label>Age</label>
+                    <input type="number" id="editAge" placeholder="Age..." />
+                </div>
+                <div class="input-group">
+                    <label>Gender</label>
+                    <select id="editGender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="saveProfile()">✅ Profile Save Karo</button>
+            </div>
+
+            <button class="btn btn-danger" onclick="resetAllData()">🗑️ Sab Data Reset Karo</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bar">
+        <button class="nav-item active" id="nav-dashboard" onclick="showScreen('dashboardScreen'); setActiveNav('nav-dashboard')">
+            <span>🏠</span>
+            <span>Home</span>
+        </button>
+        <button class="nav-item" id="nav-steps" onclick="showScreen('stepsScreen'); setActiveNav('nav-steps')">
+            <span>👟</span>
+            <span>Steps</span>
+        </button>
+        <button class="nav-item" id="nav-calories" onclick="showScreen('caloriesScreen'); setActiveNav('nav-calories')">
+            <span>🔥</span>
+            <span>Calories</span>
+        </button>
+        <button class="nav-item" id="nav-water" onclick="showScreen('waterScreen'); setActiveNav('nav-water')">
+            <span>💧</span>
+            <span>Water</span>
+        </button>
+        <button class="nav-item" id="nav-more" onclick="showScreen('sleepScreen'); setActiveNav('nav-more')">
+            <span>😴</span>
+            <span>Sleep</span>
+        </button>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    //                      DATA STORAGE
+    // ============================================================
+    
+    let appData = {
+        user: { name: '', age: '', gender: 'male' },
+        steps: 0,
+        stepGoal: 10000,
+        calories: 0,
+        calGoal: 2000,
+        water: 0,
+        waterGoal: 8,
+        bmi: null,
+        foodLog: [],
+        sleepLog: [],
+        challenges: [
+            { id: 1, icon: '👟', title: '10,000 Steps', desc: 'Aaj 10,000 steps chalein', done: false },
+            { id: 2, icon: '💧', title: '8 Glass Paani', desc: 'Aaj 8 glass paani piyen', done: false },
+            { id: 3, icon: '🥗', title: 'Healthy Khana', desc: 'Koi junk food nahi aaj', done: false },
+            { id: 4, icon: '😴', title: '8 Ghante Neend', desc: 'Raat ko puri neend lein', done: false },
+            { id: 5, icon: '🏃', title: 'Exercise', desc: '30 minute exercise karein', done: false },
+        ],
+        lastReset: new Date().toDateString()
+    };
+
+    const FOOD_DB = [
+        { name: 'Roti (1 piece)', cal: 80 },
+        { name: 'Chawal (1 cup)', cal: 206 },
+        { name: 'Biryani (1 plate)', cal: 450 },
+        { name: 'Daal (1 cup)', cal: 180 },
+        { name: 'Chicken Curry (1 serving)', cal: 320 },
+        { name: 'Egg (1 anda)', cal: 78 },
+        { name: 'Paratha (1 piece)', cal: 200 },
+        { name: 'Lassi (1 glass)', cal: 150 },
+        { name: 'Chai (1 cup)', cal: 60 },
+        { name: 'Doodh (1 glass)', cal: 120 },
+        { name: 'Apple (1 seb)', cal: 95 },
+        { name: 'Banana (1 kela)', cal: 89 },
+        { name: 'Orange (1 santra)', cal: 62 },
+        { name: 'Samosa (1 piece)', cal: 150 },
+        { name: 'Pakora (5 piece)', cal: 200 },
+        { name: 'Nihari (1 bowl)', cal: 380 },
+        { name: 'Halwa Puri', cal: 650 },
+        { name: 'Pizza (1 slice)', cal: 285 },
+        { name: 'Burger (1)', cal: 450 },
+        { name: 'French Fries (medium)', cal: 320 },
+        { name: 'Aloo (boiled, 1 cup)', cal: 134 },
+        { name: 'Palak (1 cup)', cal: 41 },
+        { name: 'Paneer (100g)', cal: 265 },
+        { name: 'Yogurt/Dahi (1 cup)', cal: 100 },
+        { name: 'Naan (1 piece)', cal: 262 },
+        { name: 'Paye (1 bowl)', cal: 350 },
+        { name: 'Khichdi (1 bowl)', cal: 190 },
+        { name: 'Seviyan (1 bowl)', cal: 220 },
+        { name: 'Kheer (1 bowl)', cal: 280 },
+        { name: 'Gulab Jamun (2 piece)', cal: 175 },
+        { name: 'Ice Cream (1 scoop)', cal: 137 },
+        { name: 'Cold Drink (1 can)', cal: 140 },
+        { name: 'Juice (1 glass)', cal: 110 },
+        { name: 'Bread (2 slice)', cal: 140 },
+        { name: 'Butter (1 tbsp)', cal: 102 },
+        { name: 'Fried Chicken (1 piece)', cal: 320 },
+        { name: 'Mutton Karahi (1 serving)', cal: 400 },
+        { name: 'Chana Masala (1 cup)', cal: 270 },
+        { name: 'Mix Vegetable (1 cup)', cal: 120 },
+        { name: 'Salad (1 plate)', cal: 50 },
+    ];
+
+    const HEALTH_TIPS = [
+        "Subah uthte hi 2 glass paani piyen - metabolism boost hoga! 💧",
+        "Din mein kam se kam 30 minute chalna sehat ke liye zaroori hai! 🚶",
+        "Fruits aur vegetables zyada khayein - vitamins milenge! 🥗",
+        "Raat ko sone se 2 ghante pehle khana kha lein! 🌙",
+        "Har ghante kuch minute khade ho kar chalo - sitting zyada sehat ke liye nuksandeh hai! ⏰",
+        "Deep breathing exercise karo - stress kam hoga! 🧘",
+        "Processed food aur junk food kam khayein! 🚫",
+        "Neend poori lein - 7-8 ghante zaroori hain! 😴",
+        "Exercise ke baad protein lena muscles ke liye acha hai! 💪",
+        "Dhoop mein thoda waqt zaroor guzarein - Vitamin D milega! ☀️",
+        "Mobile screen se aankhon ko araam dein - 20-20-20 rule follow karein! 👁️",
+        "Stress kam karne ke liye meditation ya yoga karein! 🧘‍♀️",
+    ];
+
+    // ============================================================
+    //                    INITIALIZE APP
+    // ============================================================
+
+    function loadData() {
+        const saved = localStorage.getItem('fitlifeData');
+        if (saved) {
+            appData = JSON.parse(saved);
+            // Daily reset check
+            if (appData.lastReset !== new Date().toDateString()) {
+                appData.steps = 0;
+                appData.calories = 0;
+                appData.water = 0;
+                appData.foodLog = [];
+                appData.challenges.forEach(c => c.done = false);
+                appData.lastReset = new Date().toDateString();
+                saveData();
+            }
+        }
+    }
+
+    function saveData() {
+        localStorage.setItem('fitlifeData', JSON.stringify(appData));
+    }
+
+    function startApp() {
+        const name = document.getElementById('userName').value.trim();
+        const age = document.getElementById('userAge').value;
+        const gender = document.getElementById('userGender').value;
+        
+        if (!name) { showToast('⚠️ Apna naam likhein!'); return; }
+        if (!age) { showToast('⚠️ Apni age likhein!'); return; }
+        
+        appData.user = { name, age, gender };
+        saveData();
+        
+        document.getElementById('welcomeScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        initApp();
+    }
+
+    function initApp() {
+        loadData();
+        
+        // Check if user exists
+        if (!appData.user.name) {
+            document.getElementById('welcomeScreen').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+            return;
+        }
+        
+        document.getElementById('welcomeScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        
+        // Set header
+        const now = new Date();
+        const hour = now.getHours();
+        let greeting = hour < 12 ? '🌅 Good Morning' : hour < 17 ? '☀️ Good Afternoon' : '🌙 Good Evening';
+        
+        document.getElementById('headerGreet').textContent = appData.user.name + ' 👋';
+        document.getElementById('headerDate').textContent = now.toLocaleDateString('en-PK', { weekday:'long', month:'long', day:'numeric' });
+        document.getElementById('bannerGreet').textContent = greeting + ', ' + appData.user.name + '!';
+        
+        // Daily tip
+        const tipIndex = now.getDate() % HEALTH_TIPS.length;
+        document.getElementById('dailyTip').textContent = HEALTH_TIPS[tipIndex];
+        
+        // Update all displays
+        updateDashboard();
+        updateStepDisplay();
+        updateCaloriesDisplay();
+        updateWaterDisplay();
+        renderFoodLog();
+        renderSleepLog();
+        renderChallenges();
+        updateProfile();
+        
+        // Set goals in inputs
+        document.getElementById('stepGoalInput').value = appData.stepGoal;
+        document.getElementById('calGoalInput').value = appData.calGoal;
+        document.getElementById('waterGoalInput').value = appData.waterGoal;
+        
+        if (appData.bmi) {
+            document.getElementById('dashBMI').textContent = appData.bmi;
+        }
+    }
+
+    // ============================================================
+    //                    SCREEN NAVIGATION
+    // ============================================================
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        
+        // Update profile when viewed
+        if (screenId === 'profileScreen') updateProfile();
+        if (screenId === 'dashboardScreen') updateDashboard();
+    }
+
+    function setActiveNav(navId) {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(navId).classList.add('active');
+    }
+
+    // ============================================================
+    //                    STEPS TRACKER
+    // ============================================================
+
+    function updateStepDisplay() {
+        const steps = appData.steps;
+        const goal = appData.stepGoal;
+        const percent = Math.min((steps / goal) * 100, 100);
+        const km = (steps * 0.0008).toFixed(1);
+        const calBurned = Math.round(steps * 0.04);
+        const activeMin = Math.round(steps / 100);
+        
+        document.getElementById('stepCount').textContent = steps.toLocaleString();
+        document.getElementById('stepProgress').style.width = percent + '%';
+        document.getElementById('stepGoalLabel').textContent = goal.toLocaleString() + ' Goal';
+        document.getElementById('kmWalked').textContent = km;
+        document.getElementById('calBurned').textContent = calBurned;
+        document.getElementById('activeMin').textContent = activeMin;
+        
+        // Status
+        let emoji, status, remaining;
+        const rem = Math.max(goal - steps, 0);
+        if (steps === 0) { emoji = '🛋️'; status = 'Uthho! Chalna Shuru Karo!'; }
+        else if (steps < goal * 0.25) { emoji = '🚶'; status = 'Acha shuru! Chalte raho!'; }
+        else if (steps < goal * 0.5) { emoji = '🚶‍♂️'; status = 'Mast chal rahe ho!'; }
+        else if (steps < goal * 0.75) { emoji = '🏃'; status = 'Bahut Acha! Keep Going!'; }
+        else if (steps < goal) { emoji = '🏃‍♂️'; status = 'Almost There! Bas thoda aur!'; }
+        else { emoji = '🏆'; status = 'Goal Complete! Shahbash! 🎉'; }
+        
+        document.getElementById('stepEmoji').textContent = emoji;
+        document.getElementById('stepStatus').textContent = status;
+        document.getElementById('stepRemaining').textContent = steps >= goal ? '🎉 Goal Achieved!' : rem.toLocaleString() + ' steps remaining';
+    }
+
+    function addStepsManually() {
+        document.getElementById('manualSteps').focus();
+    }
+
+    function addManualSteps() {
+        const val = parseInt(document.getElementById('manualSteps').value);
+        if (!val || val < 1) { showToast('⚠️ Steps enter karo!'); return; }
+        appData.steps += val;
+        document.getElementById('manualSteps').value = '';
+        updateStepDisplay();
+        updateDashboard();
+        saveData();
+        checkChallenges();
+        showToast('✅ ' + val + ' steps add ho gaye!');
+    }
+
+    function setStepGoal() {
+        const val = parseInt(document.getElementById('stepGoalInput').value);
+        if (!val) { showToast('⚠️ Goal enter karo!'); return; }
+        appData.stepGoal = val;
+        saveData();
+        updateStepDisplay();
+        showToast('✅ Step goal save ho gaya!');
+    }
+
+    function resetSteps() {
+        if (confirm('Steps reset karna chahte hain?')) {
+            appData.steps = 0;
+            saveData();
+            updateStepDisplay();
+            updateDashboard();
+            showToast('🔄 Steps reset ho gaye!');
+        }
+    }
+
+    // ============================================================
+    //                   CALORIES TRACKER
+    // ============================================================
+
+    function searchFood() {
+        const query = document.getElementById('foodSearch').value.toLowerCase();
+        const results = document.getElementById('foodSearchResults');
+        
+        if (!query) { results.innerHTML = ''; return; }
+        
+        const matches = FOOD_DB.filter(f => f.name.toLowerCase().includes(query));
+        
+        if (matches.length === 0) {
+            results.innerHTML = '<div style="padding:12px; text-align:center; color:#888; font-size:13px;">Nahi mila - neeche manually add karo</div>';
+            return;
+        }
+        
+        results.innerHTML = matches.slice(0, 8).map(f => `
+            <div class="food-search-item" onclick="selectFood('${f.name}', ${f.cal})">
+                <span>${f.name}</span>
+                <span class="cal-badge">${f.cal} kcal</span>
+            </div>
+        `).join('');
+    }
+
+    function selectFood(name, cal) {
+        appData.foodLog.push({ name, cal, time: new Date().toLocaleTimeString('en-PK', {hour:'2-digit', minute:'2-digit'}) });
+        appData.calories += cal;
+        document.getElementById('foodSearch').value = '';
+        document.getElementById('foodSearchResults').innerHTML = '';
+        saveData();
+        updateCaloriesDisplay();
+        renderFoodLog();
+        updateDashboard();
+        checkChallenges();
+        showToast('🍽️ ' + name + ' add ho gaya!');
+    }
+
+    function addCustomFood() {
+        const name = document.getElementById('customFoodName').value.trim();
+        const cal = parseInt(document.getElementById('customFoodCal').value);
+        if (!name || !cal) { showToast('⚠️ Naam aur calories dono bharo!'); return; }
+        selectFood(name, cal);
+        document.getElementById('customFoodName').value = '';
+        document.getElementById('customFoodCal').value = '';
+    }
+
+    function removeFood(index) {
+        appData.calories -= appData.foodLog[index].cal;
+        if (appData.calories < 0) appData.calories = 0;
+        appData.foodLog.splice(index, 1);
+        saveData();
+        updateCaloriesDisplay();
+        renderFoodLog();
+        updateDashboard();
+    }
+
+    function renderFoodLog() {
+        const log = document.getElementById('foodLog');
+        if (appData.foodLog.length === 0) {
+            log.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">Koi khana nahi add hua abhi</div>';
+            return;
+        }
+        log.innerHTML = appData.foodLog.map((f, i) => `
+            <div class="food-item">
+                <div>
+                    <div class="food-name">${f.name}</div>
+                    <div style="font-size:11px; color:#666;">${f.time}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="food-cal">${f.cal} kcal</div>
+                    <button class="food-del" onclick="removeFood(${i})">🗑️</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function updateCaloriesDisplay() {
+        const cal = appData.calories;
+        const goal = appData.calGoal;
+        const remain = Math.max(goal - cal, 0);
+        const percent = Math.min((cal / goal) * 100, 100);
+        
+        document.getElementById('totalCalDisplay').textContent = cal;
+        document.getElementById('remainCalDisplay').textContent = remain;
+        document.getElementById('calProgress').style.width = percent + '%';
+        document.getElementById('calGoalDisplay').textContent = goal;
+    }
+
+    function setCalGoal() {
+        const val = parseInt(document.getElementById('calGoalInput').value);
+        if (!val) return;
+        appData.calGoal = val;
+        saveData();
+        updateCaloriesDisplay();
+        showToast('✅ Calorie goal save ho gaya!');
+    }
+
+    // ============================================================
+    //                    WATER TRACKER
+    // ============================================================
+
+    function drinkWater() {
+        if (appData.water >= appData.waterGoal) {
+            showToast('🎉 Daily goal complete ho gaya!');
+            return;
+        }
+        appData.water++;
+        saveData();
+        updateWaterDisplay();
+        updateDashboard();
+        checkChallenges();
+        if (appData.water === appData.waterGoal) showToast('🎉 Pani ka goal complete!');
+        else showToast('💧 Paani piya! Shabash!');
+    }
+
+    function removeWater() {
+        if (appData.water <= 0) return;
+        appData.water--;
+        saveData();
+        updateWaterDisplay();
+        updateDashboard();
+    }
+
+    function updateWaterDisplay() {
+        const water = appData.water;
+        const goal = appData.waterGoal;
+        const ml = water * 250;
+        const goalML = goal * 250;
+        const percent = Math.min((water / goal) * 100, 100);
+        
+        document.getElementById('waterCount').innerHTML = water + ' <span>/ ' + goal + ' Glasses</span>';
+        document.getElementById('waterML').textContent = ml + ' ml / ' + goalML + ' ml';
+        document.getElementById('waterProgressBar').style.width = percent + '%';
+        
+        // Render glasses
+        let glassesHTML = '';
+        for (let i = 0; i < goal; i++) {
+            glassesHTML += `<div class="water-glass ${i < water ? 'filled' : ''}" onclick="drinkWater()">🥤</div>`;
+        }
+        document.getElementById('waterGlasses').innerHTML = glassesHTML;
+    }
+
+    function setWaterGoal() {
+        const val = parseInt(document.getElementById('waterGoalInput').value);
+        if (!val) return;
+        appData.waterGoal = val;
+        saveData();
+        updateWaterDisplay();
+        showToast('✅ Paani ka goal save ho gaya!');
+    }
+
+    // ============================================================
+    //                    BMI CALCULATOR
+    // ============================================================
+
+    function calculateBMI() {
+        const h = parseFloat(document.getElementById('bmiHeight').value);
+        const w = parseFloat(document.getElementById('bmiWeight').value);
+        
+        if (!h || !w) { showToast('⚠️ Height aur weight dono bharo!'); return; }
+        
+        const hm = h / 100;
+        const bmi = (w / (hm * hm)).toFixed(1);
+        appData.bmi = bmi;
+        saveData();
+        
+        let color, status, tip;
+        if (bmi < 18.5) {
+            color = '#3498db'; status = 'Underweight 😟';
+            tip = 'Aapka weight thoda kam hai. Nutritious khana khayein, protein aur healthy fats zyada lein. Doctor se zaroor milein.';
+        } else if (bmi < 25) {
+            color = '#2ecc71'; status = 'Normal Weight ✅';
+            tip = 'Mubarak ho! Aapka BMI bilkul normal hai. Aise hi healthy lifestyle continue karein!';
+        } else if (bmi < 30) {
+            color = '#f39c12'; status = 'Overweight ⚠️';
+            tip = 'Thoda weight kam karna chahiye. Regular exercise karein, healthy khayein aur processed food se bachein.';
+        } else {
+            color = '#e74c3c'; status = 'Obese 🚨';
+            tip = 'Doctor se milein. Exercise start karein, diet improve karein. Ek ek din ka effort kaafi hoga!';
+        }
+        
+        document.getElementById('bmiResult').textContent = bmi;
+        document.getElementById('bmiResult').style.color = color;
+        document.getElementById('bmiStatus').textContent = status;
+        document.getElementById('bmiStatus').style.color = color;
+        document.getElementById('bmiTip').textContent = tip;
+        document.getElementById('bmiResultCard').style.display = 'block';
+        document.getElementById('dashBMI').textContent = bmi;
+        
+        showToast('✅ BMI Calculate ho gaya: ' + bmi);
+    }
+
+    // ============================================================
+    //                    SLEEP TRACKER
+    // ============================================================
+
+    function logSleep() {
+        const sleep = document.getElementById('sleepTime').value;
+        const wake = document.getElementById('wakeTime').value;
+        
+        if (!sleep || !wake) { showToast('⚠️ Sone aur uthne ka waqt bharo!'); return; }
+        
+        let [sh, sm] = sleep.split(':').map(Number);
+        let [wh, wm] = wake.split(':').map(Number);
+        
+        let sleepMin = sh * 60 + sm;
+        let wakeMin = wh * 60 + wm;
+        
+        if (wakeMin <= sleepMin) wakeMin += 24 * 60; // Next day
+        
+        const diffMin = wakeMin - sleepMin;
+        const hours = Math.floor(diffMin / 60);
+        const mins = diffMin % 60;
+        
+        let quality, emoji;
+        if (hours < 5) { quality = 'Bahut Kam Neend 😟'; emoji = '😴'; }
+        else if (hours < 7) { quality = 'Thodi Kam Neend 😐'; emoji = '😑'; }
+        else if (hours <= 9) { quality = 'Achi Neend! 😊'; emoji = '😌'; }
+        else { quality = 'Zyada Neend 😴'; emoji = '🥱'; }
+        
+        const today = new Date().toLocaleDateString('en-PK', { month:'short', day:'numeric' });
+        
+        appData.sleepLog.unshift({
+            date: today, hours, mins, quality, emoji
+        });
+        
+        if (appData.sleepLog.length > 7) appData.sleepLog.pop();
+        
+        saveData();
+        
+        document.getElementById('sleepDuration').textContent = hours + 'h ' + mins + 'm';
+        document.getElementById('sleepQuality').textContent = quality;
+        document.getElementById('sleepResultCard').style.display = 'block';
+        
+        renderSleepLog();
+        checkChallenges();
+        showToast('✅ Sleep log ho gaya! ' + hours + 'h ' + mins + 'm');
+    }
+
+    function renderSleepLog() {
+        const log = document.getElementById('sleepLog');
+        if (appData.sleepLog.length === 0) {
+            log.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">Koi sleep record nahi hai abhi</div>';
+            return;
+        }
+        log.innerHTML = appData.sleepLog.map(s => `
+            <div class="sleep-item">
+                <div>
+                    <div class="s-date">${s.date}</div>
+                    <div style="font-size:12px; color:#888; margin-top:2px;">${s.quality}</div>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="s-duration">${s.hours}h ${s.mins}m</div>
+                    <div class="s-quality">${s.emoji}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ============================================================
+    //                    DASHBOARD
+    // ============================================================
+
+    function updateDashboard() {
+        document.getElementById('dashSteps').textContent = appData.steps.toLocaleString();
+        document.getElementById('dashCalories').textContent = appData.calories;
+        document.getElementById('dashWater').textContent = appData.water;
+        
+        document.getElementById('stepsProgress').style.width = Math.min((appData.steps / appData.stepGoal) * 100, 100) + '%';
+        document.getElementById('caloriesProgress').style.width = Math.min((appData.calories / appData.calGoal) * 100, 100) + '%';
+        document.getElementById('waterProgress').style.width = Math.min((appData.water / appData.waterGoal) * 100, 100) + '%';
+        
+        // Update summary in profile
+        document.getElementById('sumSteps').textContent = appData.steps.toLocaleString() + ' steps';
+        document.getElementById('sumCalories').textContent = appData.calories + ' kcal';
+        document.getElementById('sumWater').textContent = appData.water + ' Glass';
+        document.getElementById('sumBMI').textContent = appData.bmi || '--';
+    }
+
+    // ============================================================
+    //                    CHALLENGES
+    // ============================================================
+
+    function renderChallenges() {
+        const list = document.getElementById('challengesList');
+        list.innerHTML = appData.challenges.map(c => `
+            <div class="challenge-card">
+                <div class="c-icon">${c.icon}</div>
+                <div class="c-info">
+                    <div class="c-title">${c.title}</div>
+                    <div class="c-desc">${c.desc}</div>
+                </div>
+                <button class="c-btn ${c.done ? 'done' : ''}" onclick="toggleChallenge(${c.id})">
+                    ${c.done ? '✅ Done' : 'Mark Done'}
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function toggleChallenge(id) {
+        const ch = appData.challenges.find(c => c.id === id);
+        if (ch) {
+            ch.done = !ch.done;
+            saveData();
+            renderChallenges();
+            if (ch.done) showToast('🏆 Challenge complete! Shabash!');
+        }
+    }
+
+    function checkChallenges() {
+        // Auto check challenges
+        if (appData.steps >= appData.stepGoal) {
+            const ch = appData.challenges.find(c => c.id === 1);
+            if (ch && !ch.done) { ch.done = true; showToast('🏆 Step challenge complete!'); }
+        }
+        if (appData.water >= appData.waterGoal) {
+            const ch = appData.challenges.find(c => c.id === 2);
+            if (ch && !ch.done) { ch.done = true; showToast('🏆 Water challenge complete!'); }
+        }
+        saveData();
+        renderChallenges();
+    }
+
+    // ============================================================
+    //                    PROFILE
+    // ============================================================
+
+    function updateProfile() {
+        document.getElementById('profileName').textContent = appData.user.name || '--';
+        document.getElementById('profileInfo').textContent = 
+            (appData.user.age ? appData.user.age + ' Saal' : '') + 
+            (appData.user.gender ? ' • ' + (appData.user.gender === 'male' ? 'Male 👦' : 'Female 👧') : '');
+        
+        document.getElementById('editName').value = appData.user.name || '';
+        document.getElementById('editAge').value = appData.user.age || '';
+        document.getElementById('editGender').value = appData.user.gender || 'male';
+        
+        document.getElementById('sumSteps').textContent = appData.steps.toLocaleString() + ' steps';
+        document.getElementById('sumCalories').textContent = appData.calories + ' kcal';
+        document.getElementById('sumWater').textContent = appData.water + ' Glass';
+        document.getElementById('sumBMI').textContent = appData.bmi || '--';
+    }
+
+    function saveProfile() {
+        appData.user.name = document.getElementById('editName').value.trim();
+        appData.user.age = document.getElementById('editAge').value;
+        appData.user.gender = document.getElementById('editGender').value;
+        saveData();
+        updateProfile();
+        showToast('✅ Profile save ho gaya!');
+    }
+
+    function resetAllData() {
+        if (confirm('Sab data delete hoga. Confirm karo?')) {
+            localStorage.removeItem('fitlifeData');
+            location.reload();
+        }
+    }
+
+    // ============================================================
+    //                    TOAST NOTIFICATION
+    // ============================================================
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // ============================================================
+    //                    INIT
+    // ============================================================
+
+    window.onload = function() {
+        loadData();
+        if (appData.user.name) {
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            initApp();
+        }
+    };
+</script>
+</body>
+</html>
